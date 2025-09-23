@@ -9,12 +9,12 @@ Com essa solução, é possível demonstrar o funcionamento completo da API, val
 ## Instalação
 ### 1. Clonar o Repositório
 ```Bash
-git clone https://github.com/[seu-usuario]/[seu-repositorio].git
+git clone https://github.com/rafaelviktor29/library-api.git
 ```
 
 ### 2. Navegar até a Pasta do Projeto
 ```Bash
-cd [nome-do-seu-repositorio]
+cd library-api
 ```
 
 ### 3. Restaurar as Dependências (.csproj)
