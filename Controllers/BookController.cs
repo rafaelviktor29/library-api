@@ -20,7 +20,7 @@ public class BookController : LibraryBaseController
     [HttpPost]
     [ProducesResponseType(typeof(ResponseCreateBookJson), StatusCodes.Status201Created)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public IActionResult Create([FromBody] RequestCreateBookJson request)
+    public IActionResult Create([FromBody] RequestBookJson request)
     {
         if (!ModelState.IsValid)
         {
@@ -55,36 +55,27 @@ public class BookController : LibraryBaseController
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public IActionResult Update([FromRoute] int id, [FromBody] RequestUpdateBookJson request)
+    public IActionResult Update([FromRoute] int id, [FromBody] RequestBookJson request)
     {
-        List<Book> books = CsvService.ReadFromCsv();
-        var book = books.SingleOrDefault(b => b.Id == id);
-
-        if (book == null)
-        {
-            return NotFound();
-        }
-
-        int bookIndex = books.IndexOf(book);
-
         if (!ModelState.IsValid)
         {
             return BadRequest(ModelState);
         }
 
-        if (!string.IsNullOrEmpty(request.Title))
+        List<Book> books = CsvService.ReadFromCsv().ToList();
+        var bookToUpdate = books.FirstOrDefault(b => b.Id == id);
+
+        if (bookToUpdate == null)
         {
-            book.Title = request.Title;
+            return NotFound();
         }
 
-        if (!string.IsNullOrEmpty(request.Author))
-        {
-            book.Author = request.Author;
-        }
+        bookToUpdate.Title = request.Title;
+        bookToUpdate.Author = request.Author;
+        bookToUpdate.Genre = request.Genre;
+        bookToUpdate.Price = request.Price;
+        bookToUpdate.QuantityInStock = request.QuantityInStock;
 
-        book.Genre = request.Genre;
-
-        books[bookIndex] = book;
         CsvService.OverwriteBooksToCSV(books);
 
         return NoContent();

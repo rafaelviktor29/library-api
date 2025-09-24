@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Library.Communication.Requests;
 
-public class RequestCreateBookJson
+public class RequestBookJson
 {
     [Required]
     public required string Title { get; set; }
