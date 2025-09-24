@@ -12,7 +12,7 @@ public class BookController : LibraryBaseController
     [ProducesResponseType(typeof(List<Book>), StatusCodes.Status200OK)]
     public IActionResult GetAll()
     {
-        List<Book> response = CsvService.ReadFromCsv().ToList();
+        List<Book> response = CsvService.ReadFromCsv();
 
         return Ok(response);
     }
@@ -29,7 +29,7 @@ public class BookController : LibraryBaseController
 
         int nextId = CsvService.NextId();
 
-        var NewBook = new Book()
+        var NewBook = new Book
         {
             Id = nextId,
             Title = request.Title,
@@ -49,5 +49,75 @@ public class BookController : LibraryBaseController
         };
 
         return Created(string.Empty, response);
+    }
+
+    [HttpPut("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public IActionResult Update([FromRoute] int id, [FromBody] RequestUpdateBookJson request)
+    {
+        List<Book> books = CsvService.ReadFromCsv();
+        var book = books.SingleOrDefault(b => b.Id == id);
+
+        if (book == null)
+        {
+            return NotFound();
+        }
+
+        int bookIndex = books.IndexOf(book);
+
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
+        if (!string.IsNullOrEmpty(request.Title))
+        {
+            book.Title = request.Title;
+        }
+
+        if (!string.IsNullOrEmpty(request.Author))
+        {
+            book.Author = request.Author;
+        }
+
+        book.Genre = request.Genre;
+
+        books[bookIndex] = book;
+        CsvService.OverwriteBooksToCSV(books);
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    [ProducesResponseType(StatusCodes.Status204NoContent)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public IActionResult Delete([FromRoute] int id)
+    {
+        List<Book> books = CsvService.ReadFromCsv();
+        var book = books.SingleOrDefault(b => b.Id == id);
+
+        if (book == null)
+        {
+            return NotFound();
+        }
+
+        int bookIndex = books.IndexOf(book);
+        books[bookIndex].QuantityInStock = 0;
+        CsvService.OverwriteBooksToCSV(books);
+
+        return NoContent();
+    }
+
+    [HttpGet("{id}")]
+    [ProducesResponseType(typeof(Book), StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status404NotFound)]
+    public IActionResult GetById([FromRoute] int id)
+    {
+        List<Book> books = CsvService.ReadFromCsv();
+        var book = books.SingleOrDefault(b => b.Id == id);
+
+        return book == null ? NotFound() : Ok(book);
     }
 }

@@ -22,15 +22,21 @@ public class CsvService
         }
     }
 
-    public static List<Book> ReadFromCsv()
+    public static List<Book> ReadFromCsv(bool includeDeleted = false)
     {
-        // Garante que o arquivo existe antes de tentar lê-lo
         EnsureFileExistsAndHasHeader();
 
         using (var reader = new StreamReader(FilePath))
         using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
         {
-            return csv.GetRecords<Book>().ToList();
+            var records = csv.GetRecords<Book>().ToList();
+
+            if (includeDeleted)
+            {
+                return records;
+            }
+
+            return records.Where(b => b.QuantityInStock > 0).ToList();
         }
     }
 
@@ -58,7 +64,7 @@ public class CsvService
 
     public static int NextId() 
     {
-        List<Book> books = ReadFromCsv();
+        List<Book> books = ReadFromCsv(true);
 
         return books.Any() ? books.Max(b => b.Id) + 1 : 1;
     }
